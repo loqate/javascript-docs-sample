@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phone Validation</title>
+</head>
+<body>
+    <h2>Validate Phone Number</h2>
+    
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" placeholder="+44 1234 567890">
+    
+    <button onclick="validate()">Validate</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your API key
+        
+        async function validate() {
+            const phone = document.getElementById('phone').value;
+            const result = document.getElementById('result');
+            
+            if (!phone) {
+                result.textContent = 'Please enter a phone number';
+                return;
+            }
+            
+            try {
+                const response = await fetch('https://services.postcodeanywhere.co.uk/PhoneNumberValidation/Interactive/Validate/v2.20/json3.ws', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        Key: apiKey,
+                        Phone: phone,
+                        Country: 'GB'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.Items && data.Items[0].IsValid === 'Yes') {
+                    result.innerHTML = '<strong>Valid Phone Number</strong><br>' +
+                        'Format: ' + data.Items[0].NationalFormat + '<br>' +
+                        'Type: ' + data.Items[0].NumberType;
+                } else {
+                    result.textContent = 'Invalid phone number';
+                }
+            } catch (error) {
+                result.textContent = 'Error validating phone number';
+            }
+        }
+    </script>
+</body>
+</html>
