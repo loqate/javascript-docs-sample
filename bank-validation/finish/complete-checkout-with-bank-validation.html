@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Form with Bank Validation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .payment-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .payment-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .payment-header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .payment-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .payment-form {
+            padding: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+        
+        #bankValidation {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .bank-checking {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .bank-valid {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .bank-invalid {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .bank-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            display: none;
+        }
+        
+        .payment-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .payment-btn:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .summary-total {
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 10px;
+            border-top: 2px solid #dee2e6;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>Direct Debit Setup</h1>
+            <p>Secure payment processing</p>
+        </div>
+        
+        <form class="payment-form" id="paymentForm">
+            <div class="payment-summary">
+                <div class="summary-row">
+                    <span>Monthly Subscription</span>
+                    <span>£49.99</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>£49.99</span>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title">Account Holder</h2>
+                
+                <div class="form-row">
+                    <label for="accountName">Account Name *</label>
+                    <input 
+                        type="text" 
+                        id="accountName" 
+                        name="accountName" 
+                        placeholder="John Doe"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title">Bank Details</h2>
+                
+                <div class="form-row-split">
+                    <div class="form-row">
+                        <label for="sortCode">Sort Code *</label>
+                        <input 
+                            type="text" 
+                            id="sortCode" 
+                            name="sortCode" 
+                            placeholder="40-47-84"
+                            maxlength="8"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="accountNumber">Account Number *</label>
+                        <input 
+                            type="text" 
+                            id="accountNumber" 
+                            name="accountNumber" 
+                            placeholder="70872490"
+                            maxlength="8"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <span id="bankValidation"></span>
+                <div class="bank-info" id="bankInfo"></div>
+            </div>
+            
+            <button type="submit" class="payment-btn">Set Up Direct Debit</button>
+            
+            <div class="success-message" id="successMessage">
+                Direct debit successfully set up! Confirmation email sent.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your Loqate API key
+        
+        const form = document.getElementById('paymentForm');
+        const sortCodeInput = document.getElementById('sortCode');
+        const accountNumberInput = document.getElementById('accountNumber');
+        const bankValidation = document.getElementById('bankValidation');
+        const bankInfo = document.getElementById('bankInfo');
+        const successMessage = document.getElementById('successMessage');
+        
+        let isBankValid = false;
+        
+        // Format sort code as user types
+        sortCodeInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '-' + value.slice(2, 4) + '-' + value.slice(4, 6);
+            }
+            e.target.value = value;
+        });
+        
+        // Ensure account number is digits only
+        accountNumberInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8);
+        });
+        
+        async function validateBank(sortCode, accountNumber) {
+            try {
+                const cleanSortCode = sortCode.replace(/-/g, '');
+                
+                const response = await fetch(
+                    `https://api.addressy.com/BankAccountValidation/Interactive/Validate/v2.00/json3.ws?` +
+                    `Key=${apiKey}&SortCode=${cleanSortCode}&AccountNumber=${accountNumber}`
+                );
+                
+                const data = await response.json();
+                
+                if (data.Items && data.Items[0] && data.Items[0].Error) {
+                    throw new Error(data.Items[0].Description);
+                }
+                
+                return data.Items[0];
+            } catch (error) {
+                console.error('Validation error:', error);
+                throw error;
+            }
+        }
+        
+        async function checkValidation() {
+            const sortCode = sortCodeInput.value.trim();
+            const accountNumber = accountNumberInput.value.trim();
+            
+            if (!sortCode || !accountNumber) {
+                bankValidation.style.display = 'none';
+                bankInfo.style.display = 'none';
+                isBankValid = false;
+                return;
+            }
+            
+            bankValidation.className = 'bank-checking';
+            bankValidation.style.display = 'block';
+            bankValidation.textContent = 'Validating bank details...';
+            bankInfo.style.display = 'none';
+            
+            try {
+                const result = await validateBank(sortCode, accountNumber);
+                
+                if (result.IsCorrect === 'Yes' || result.IsCorrect === true) {
+                    isBankValid = true;
+                    bankValidation.className = 'bank-valid';
+                    
+                    if (result.StatusInformation === 'DetailsChanged') {
+                        sortCodeInput.value = formatSortCode(result.CorrectedSortCode);
+                        accountNumberInput.value = result.CorrectedAccountNumber;
+                        bankValidation.textContent = 'Bank details corrected and validated';
+                    } else {
+                        bankValidation.textContent = 'Valid bank account';
+                    }
+                    
+                    // Show bank information
+                    if (result.Bank || result.Branch) {
+                        let info = '';
+                        if (result.Bank) info += `Bank: ${result.Bank}`;
+                        if (result.Branch) info += ` • Branch: ${result.Branch}`;
+                        if (result.IsDirectDebitCapable === 'Yes' || result.IsDirectDebitCapable === true) {
+                            info += ' • Direct Debit capable';
+                        }
+                        bankInfo.textContent = info;
+                        bankInfo.style.display = 'block';
+                    }
+                } else {
+                    isBankValid = false;
+                    bankValidation.className = 'bank-invalid';
+                    
+                    if (result.StatusInformation === 'UnknownSortCode') {
+                        bankValidation.textContent = 'Unknown sort code';
+                    } else {
+                        bankValidation.textContent = 'Invalid bank details';
+                    }
+                }
+            } catch (error) {
+                isBankValid = false;
+                bankValidation.className = 'bank-invalid';
+                bankValidation.textContent = '' + error.message;
+            }
+        }
+        
+        function formatSortCode(code) {
+            const digits = code.replace(/\D/g, '');
+            if (digits.length >= 6) {
+                return digits.slice(0, 2) + '-' + digits.slice(2, 4) + '-' + digits.slice(4, 6);
+            }
+            return code;
+        }
+        
+        sortCodeInput.addEventListener('blur', checkValidation);
+        accountNumberInput.addEventListener('blur', checkValidation);
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!isBankValid) {
+                bankValidation.className = 'bank-invalid';
+                bankValidation.style.display = 'block';
+                bankValidation.textContent = 'Please validate bank details before submitting';
+                sortCodeInput.focus();
+                return;
+            }
+            
+            // Hide form and show success message
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
