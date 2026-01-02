@@ -284,7 +284,7 @@
             <button type="submit" class="checkout-btn">Complete Purchase</button>
             
             <div class="success-message" id="successMessage">
-                ✓ Order placed successfully! Check your email for confirmation.
+                Order placed successfully! Check your email for confirmation.
             </div>
         </form>
     </div>
@@ -346,7 +346,7 @@
                 if (result.ResponseCode === 'Valid' || result.ResponseCode === 'Valid_CatchAll') {
                     isEmailValid = true;
                     emailValidation.className = 'email-valid';
-                    emailValidation.textContent = '✓ Valid email address';
+                    emailValidation.textContent = 'Valid email address';
                     
                     if (result.ResponseCode === 'Valid_CatchAll') {
                         emailValidation.textContent += ' (catch-all domain)';
@@ -358,16 +358,16 @@
                 } else if (result.ResponseCode === 'Timeout') {
                     isEmailValid = false;
                     emailValidation.className = 'email-invalid';
-                    emailValidation.textContent = '⚠ Validation timeout - please check your email';
+                    emailValidation.textContent = 'Validation timeout - please check your email';
                 } else {
                     isEmailValid = false;
                     emailValidation.className = 'email-invalid';
-                    emailValidation.textContent = '✗ Invalid email address';
+                    emailValidation.textContent = 'Invalid email address';
                 }
             } catch (error) {
                 isEmailValid = false;
                 emailValidation.className = 'email-invalid';
-                emailValidation.textContent = '✗ ' + error.message;
+                emailValidation.textContent = error.message;
             }
         });
         
@@ -377,7 +377,7 @@
             if (!isEmailValid) {
                 emailValidation.className = 'email-invalid';
                 emailValidation.style.display = 'block';
-                emailValidation.textContent = '✗ Please enter a valid email address';
+                emailValidation.textContent = 'Please enter a valid email address';
                 emailInput.focus();
                 return;
             }

@@ -148,16 +148,16 @@
                 
                 if (result.ResponseCode === 'Valid') {
                     emailValidation.className = 'email-valid';
-                    emailValidation.textContent = '✓ Valid email address';
+                    emailValidation.textContent = 'Valid email address';
                 } else if (result.ResponseCode === 'Valid_CatchAll') {
                     emailValidation.className = 'email-valid';
-                    emailValidation.textContent = '✓ Valid (catch-all domain)';
+                    emailValidation.textContent = 'Valid (catch-all domain)';
                 } else if (result.ResponseCode === 'Timeout') {
                     emailValidation.className = 'email-invalid';
-                    emailValidation.textContent = '⚠ Validation timeout - try again';
+                    emailValidation.textContent = 'Validation timeout - try again';
                 } else {
                     emailValidation.className = 'email-invalid';
-                    emailValidation.textContent = '✗ Invalid email address';
+                    emailValidation.textContent = 'Invalid email address';
                 }
                 
                 // Show additional warnings
@@ -166,7 +166,7 @@
                 }
             } catch (error) {
                 emailValidation.className = 'email-invalid';
-                emailValidation.textContent = '✗ Validation error: ' + error.message;
+                emailValidation.textContent = 'Validation error: ' + error.message;
             }
         });
     </script>
