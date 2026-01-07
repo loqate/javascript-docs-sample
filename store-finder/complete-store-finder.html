@@ -208,7 +208,7 @@
         
         async function getMapTiles() {
             const response = await fetch(
-                `https://api.addressy.com/DistanceFinder/Interactive/Mapping/v1.00/json3.ws?Key=${serviceKey}`
+                `https://api.addressy.com/DistanceFinder/Interactive/Mapping/v1.00/json6.ws?Key=${serviceKey}`
             );
             const data = await response.json();
             return data.Items[0].Url;
@@ -217,7 +217,7 @@
         async function findNearestStores(lat, lng) {
             try {
                 const response = await fetch(
-                    'https://api.addressy.com/DistanceFinder/Interactive/Find/v1.00/json3.ws',
+                    'https://api.addressy.com/DistanceFinder/Interactive/Find/v1.00/json6.ws',
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -348,7 +348,7 @@
             
             try {
                 const response = await fetch(
-                    `https://api.addressy.com/DistanceFinder/Interactive/GeocodingTypeahead/v1.00/json3.ws?` +
+                    `https://api.addressy.com/DistanceFinder/Interactive/GeocodingTypeahead/v1.00/json6.ws?` +
                     `Key=${serviceKey}&Text=${encodeURIComponent(searchTerm)}&MaxResults=1`
                 );
                 
