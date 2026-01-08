@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout with Address Capture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .checkout-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .checkout-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .checkout-header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .checkout-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .checkout-form {
+            padding: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .suggestion {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion:hover {
+            background: #f8f9fa;
+        }
+        
+        .suggestion-text {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .suggestion-description {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .checkout-btn:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .order-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .summary-total {
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 10px;
+            border-top: 2px solid #dee2e6;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>Secure Checkout</h1>
+            <p>Complete your order</p>
+        </div>
+        
+        <form class="checkout-form" id="checkoutForm">
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Product Total</span>
+                    <span>$89.99</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>$10.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax</span>
+                    <span>$8.00</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>$107.99</span>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title">Shipping Address</h2>
+                
+                <div class="form-row">
+                    <label for="addressSearch">Search for address *</label>
+                    <input 
+                        type="text" 
+                        id="addressSearch" 
+                        placeholder="Start typing your address..."
+                        autocomplete="off"
+                        required
+                    >
+                    <div id="suggestions" class="suggestions"></div>
+                </div>
+                
+                <div class="form-row">
+                    <label for="company">Company (optional)</label>
+                    <input 
+                        type="text" 
+                        id="company" 
+                        placeholder="Company name"
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="addressLine1">Address Line 1 *</label>
+                    <input 
+                        type="text" 
+                        id="addressLine1" 
+                        placeholder="Street address"
+                        required
+                        readonly
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="addressLine2">Address Line 2</label>
+                    <input 
+                        type="text" 
+                        id="addressLine2" 
+                        placeholder="Apartment, suite, etc."
+                        readonly
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="city">City *</label>
+                    <input 
+                        type="text" 
+                        id="city" 
+                        placeholder="City"
+                        required
+                        readonly
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="postalCode">Postal Code *</label>
+                    <input 
+                        type="text" 
+                        id="postalCode" 
+                        placeholder="Postal code"
+                        required
+                        readonly
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="country">Country *</label>
+                    <input 
+                        type="text" 
+                        id="country" 
+                        placeholder="Country"
+                        required
+                        readonly
+                    >
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title">Contact Information</h2>
+                
+                <div class="form-row">
+                    <label for="email">Email *</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="your@email.com"
+                        required
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <label for="phone">Phone *</label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        placeholder="+1234567890"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <button type="submit" class="checkout-btn">Complete Order</button>
+            
+            <div class="success-message" id="successMessage">
+                Order placed successfully! Confirmation sent to your email.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const apiKey = 'YOUR_API_KEY'; // Replace with your Loqate API key
+        
+        const form = document.getElementById('checkoutForm');
+        const searchInput = document.getElementById('addressSearch');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const successMessage = document.getElementById('successMessage');
+        
+        let debounceTimer;
+        
+        async function findAddress(text, container = '') {
+            try {
+                const params = new URLSearchParams({
+                    Key: apiKey,
+                    Text: text,
+                    Container: container,
+                    Limit: 10
+                });
+                
+                const response = await fetch(
+                    `https://api.addressy.com/Capture/Interactive/Find/v1.10/json6.ws?${params}`
+                );
+                
+                const data = await response.json();
+                
+                if (data.Items && data.Items[0] && data.Items[0].Error) {
+                    console.error('API Error:', data.Items[0].Description);
+                    return [];
+                }
+                
+                return data.Items || [];
+            } catch (error) {
+                console.error('Find error:', error);
+                return [];
+            }
+        }
+        
+        async function retrieveAddress(id) {
+            try {
+                const params = new URLSearchParams({
+                    Key: apiKey,
+                    Id: id
+                });
+                
+                const response = await fetch(
+                    `https://api.addressy.com/Capture/Interactive/Retrieve/v1.00/json6.ws?${params}`
+                );
+                
+                const data = await response.json();
+                
+                if (data.Items && data.Items[0] && data.Items[0].Error) {
+                    console.error('API Error:', data.Items[0].Description);
+                    return null;
+                }
+                
+                return data.Items[0];
+            } catch (error) {
+                console.error('Retrieve error:', error);
+                return null;
+            }
+        }
+        
+        function showSuggestions(results) {
+            if (!results || results.length === 0) {
+                hideSuggestions();
+                return;
+            }
+            
+            suggestionsDiv.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = 'suggestion';
+                div.innerHTML = `
+                    <div class="suggestion-text">${result.Text}</div>
+                    <div class="suggestion-description">${result.Description}</div>
+                `;
+                
+                div.addEventListener('click', async () => {
+                    if (result.Type === 'Address') {
+                        const address = await retrieveAddress(result.Id);
+                        if (address) {
+                            populateForm(address);
+                            searchInput.value = result.Text + ', ' + result.Description;
+                            hideSuggestions();
+                        }
+                    } else {
+                        searchInput.value = result.Text;
+                        const moreResults = await findAddress(result.Text, result.Id);
+                        showSuggestions(moreResults);
+                    }
+                });
+                
+                suggestionsDiv.appendChild(div);
+            });
+            
+            suggestionsDiv.style.display = 'block';
+        }
+        
+        function hideSuggestions() {
+            suggestionsDiv.style.display = 'none';
+        }
+        
+        function populateForm(address) {
+            document.getElementById('company').value = address.Company || '';
+            document.getElementById('addressLine1').value = address.Line1 || '';
+            document.getElementById('addressLine2').value = address.Line2 || '';
+            document.getElementById('city').value = address.City || '';
+            document.getElementById('postalCode').value = address.PostalCode || '';
+            document.getElementById('country').value = address.CountryName || '';
+        }
+        
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value;
+            
+            clearTimeout(debounceTimer);
+            
+            if (searchTerm.length < 3) {
+                hideSuggestions();
+                return;
+            }
+            
+            debounceTimer = setTimeout(async () => {
+                const results = await findAddress(searchTerm);
+                showSuggestions(results);
+            }, 300);
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#addressSearch') && !e.target.closest('#suggestions')) {
+                hideSuggestions();
+            }
+        });
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
