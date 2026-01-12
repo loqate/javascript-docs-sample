@@ -166,7 +166,7 @@
                 const cleanSortCode = sortCode.replace(/-/g, '');
                 
                 const response = await fetch(
-                    `https://api.addressy.com/BankAccountValidation/Interactive/Validate/v2.00/json3.ws?` +
+                    `https://api.addressy.com/BankAccountValidation/Interactive/Validate/v2.00/json6.ws?` +
                     `Key=${apiKey}&SortCode=${cleanSortCode}&AccountNumber=${accountNumber}`
                 );
                 
