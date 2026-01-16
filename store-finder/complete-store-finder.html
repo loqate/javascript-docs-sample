@@ -190,6 +190,11 @@
         let map;
         let markers = [];
         
+        // Validate API keys are set
+        if (serviceKey === 'YOUR_SERVICE_KEY' || locationListId === 'YOUR_LOCATION_LIST_ID') {
+            console.warn('⚠️ Warning: Please replace YOUR_SERVICE_KEY and YOUR_LOCATION_LIST_ID with your actual keys!');
+        }
+        
         async function initMap(lat, lng) {
             const tileUrl = await getMapTiles();
             
@@ -211,34 +216,43 @@
                 `https://api.addressy.com/DistanceFinder/Interactive/Mapping/v1.00/json6.ws?Key=${serviceKey}`
             );
             const data = await response.json();
+            
+            if (!data || !data.Items || data.Items.length === 0) {
+                throw new Error('Failed to get map tiles. Check your API key.');
+            }
+            
             return data.Items[0].Url;
         }
         
         async function findNearestStores(lat, lng) {
             try {
                 const response = await fetch(
-                    'https://api.addressy.com/DistanceFinder/Interactive/Find/v1.00/json6.ws',
+                    'https://api.addressy.com/LocationServices/DistanceFinder/Nearby/v1.10/json6.ws',
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             Key: serviceKey,
                             LocationListId: locationListId,
-                            OriginLatitude: lat,
-                            OriginLongitude: lng,
+                            OriginLocation: {
+                                Latitude: lat.toString(),
+                                Longitude: lng.toString()
+                            },
                             MaxResults: 10,
-                            MaxDistance: 100
+                            MaxDistance: 50000  // 50km in meters
                         })
                     }
                 );
                 
                 const data = await response.json();
                 
-                if (data.Items && data.Items[0] && data.Items[0].Error) {
-                    throw new Error(data.Items[0].Description);
+                console.log('Store Finder API Response:', data); // Debug log
+                
+                if (!data || !data.DestinationLocations) {
+                    throw new Error('No response from store finder service. Check your API key and Location List ID.');
                 }
                 
-                return data.Items || [];
+                return data.DestinationLocations || [];
             } catch (error) {
                 console.error('Error finding stores:', error);
                 throw error;
@@ -249,33 +263,41 @@
             const storeList = document.getElementById('storeList');
             
             if (stores.length === 0) {
-                storeList.innerHTML = '<p style="color: #666;">No stores found within 100km</p>';
+                storeList.innerHTML = '<p style="color: #666;">No stores found within 50km</p>';
                 return;
             }
             
-            storeList.innerHTML = stores.map((store, index) => `
-                <div class="store-item" onclick="focusStore(${index})">
-                    <div class="store-name">${store.Name}</div>
-                    <div class="store-address">${store.Address || store.AddressLine1}</div>
-                    <div class="store-distance">
-                        ${store.Distance.toFixed(1)} km away
-                        ${store.TravelTime ? ` • ${Math.round(store.TravelTime)} min drive` : ''}
+            storeList.innerHTML = stores.map((item, index) => {
+                const store = item.DestinationLocation;
+                const distance = item.Distance;
+                const time = item.Time;
+                
+                return `
+                    <div class="store-item" onclick="focusStore(${index})">
+                        <div class="store-name">${store.Name}</div>
+                        <div class="store-address">${store.Address}</div>
+                        <div class="store-distance">
+                            ${distance}${time ? ` • ${time} drive` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             clearMarkers();
             
-            stores.forEach((store, index) => {
+            stores.forEach((item, index) => {
+                const store = item.DestinationLocation;
+                const distance = item.Distance;
+                
                 const marker = new maplibregl.Marker({ color: '#4CAF50' })
-                    .setLngLat([store.Longitude, store.Latitude])
+                    .setLngLat([parseFloat(store.Longitude), parseFloat(store.Latitude)])
                     .setPopup(
                         new maplibregl.Popup().setHTML(`
                             <div style="padding: 10px;">
                                 <strong>${store.Name}</strong><br>
-                                ${store.Address || store.AddressLine1}<br>
+                                ${store.Address}<br>
                                 <span style="color: #4CAF50; font-weight: 600;">
-                                    ${store.Distance.toFixed(1)} km away
+                                    ${distance}
                                 </span>
                             </div>
                         `)
@@ -287,8 +309,9 @@
             
             if (stores.length > 0) {
                 const bounds = new maplibregl.LngLatBounds();
-                stores.forEach(store => {
-                    bounds.extend([store.Longitude, store.Latitude]);
+                stores.forEach(item => {
+                    const store = item.DestinationLocation;
+                    bounds.extend([parseFloat(store.Longitude), parseFloat(store.Latitude)]);
                 });
                 map.fitBounds(bounds, { padding: 50 });
             }
@@ -317,17 +340,23 @@
             
             navigator.geolocation.getCurrentPosition(
                 async position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    if (!map) {
-                        await initMap(lat, lng);
+                    try {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (!map) {
+                            await initMap(lat, lng);
+                        }
+                        
+                        document.getElementById('storeList').innerHTML = '<div class="loading">Finding nearest stores...</div>';
+                        
+                        const stores = await findNearestStores(lat, lng);
+                        displayStores(stores);
+                    } catch (error) {
+                        console.error('Error in useMyLocation:', error);
+                        alert('Error: ' + error.message);
+                        document.getElementById('storeList').innerHTML = '<p style="color: #666;">Enter a location to find nearby stores</p>';
                     }
-                    
-                    document.getElementById('storeList').innerHTML = '<div class="loading">Finding nearest stores...</div>';
-                    
-                    const stores = await findNearestStores(lat, lng);
-                    displayStores(stores);
                 },
                 error => {
                     alert('Unable to get your location. Please enter an address manually.');
@@ -372,6 +401,7 @@
                 displayStores(stores);
                 
             } catch (error) {
+                console.error('Error in searchStores:', error);
                 alert('Error: ' + error.message);
                 document.getElementById('storeList').innerHTML = '<p style="color: #666;">Enter a location to find nearby stores</p>';
             }
