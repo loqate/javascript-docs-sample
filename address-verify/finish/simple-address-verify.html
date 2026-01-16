@@ -239,15 +239,18 @@
                 
                 console.log('API Response:', data); // Debug log
                 
-                if (!data || !data.Items || data.Items.length === 0) {
+                // Response is an array, not an object with Items
+                if (!data || !Array.isArray(data) || data.length === 0) {
                     throw new Error('No response from verification service. Check your API key.');
                 }
                 
-                if (data.Items[0].Error) {
-                    throw new Error(data.Items[0].Description || 'Verification failed');
+                // Check if first result has Matches
+                if (!data[0].Matches || data[0].Matches.length === 0) {
+                    throw new Error('Address could not be verified.');
                 }
                 
-                return data.Items[0];
+                // Return first match
+                return data[0].Matches[0];
             } catch (error) {
                 console.error('Verification error:', error);
                 throw error;
