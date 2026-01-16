@@ -237,8 +237,14 @@
                 
                 const data = await response.json();
                 
-                if (data.Items && data.Items[0] && data.Items[0].Error) {
-                    throw new Error(data.Items[0].Description);
+                console.log('API Response:', data); // Debug log
+                
+                if (!data || !data.Items || data.Items.length === 0) {
+                    throw new Error('No response from verification service. Check your API key.');
+                }
+                
+                if (data.Items[0].Error) {
+                    throw new Error(data.Items[0].Description || 'Verification failed');
                 }
                 
                 return data.Items[0];
